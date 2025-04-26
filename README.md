@@ -90,7 +90,74 @@ Easy to use, from minimap2 to plot.
       filterPaf(paf.table = paf.table, min.align.len = 100000)
       plotMiro(paf.table = paf.table, color.by = "identity")
       dev.off()
-  
+# 2. Different expression genes in eggs
+## 2.1 Clean and mapping
+      Clean
+      trim_galore -j 40 -q 30 --fastqc --paired --output_dir ./ /home/zhangtingting/grasshopper/02RNA-Seq/20220721/zen/dsGFP/${i}_1.fq.gz /home/zhangtingting/grasshopper/02RNA-Seq/20220721/zen/dsGFP/${i}_2.fq.gz
+      Mapping
+      /home/zhangtingting/software/STAR-2.7.11b/source/STAR --genomeDir /home/zhangtingting/grasshopper/01genome/LG_STAR --runThreadN 20 --readFilesIn /home/zhangtingting/grasshopper/02RNA-Seq/20220721/zen/dsLmzen/${i}_1.fq.gz,/home/zhangtingting/grasshopper/02RNA-Seq/20220721/zen/dsLmzen/${i}_2.fq.gz --readFilesCommand zcat --outFileNamePrefix zen_$i --outSAMtype BAM SortedByCoordinate --outBAMsortingThreadN 10 --outSAMstrandField intronMotif --outFilterIntronMotifs RemoveNoncanonical --outFilterMismatchNmax 3 --outFilterMismatchNoverLmax 0.1 --outFilterMismatchNoverReadLmax 0.5
+## 2.2 Quantity
+      for i in 2020_I2N5-dsGFP2_L3_135135Aligned.sortedByCoord.out.bam \
+      2020_I2N5-dsGFP3_L3_136136Aligned.sortedByCoord.out.bam \
+      2020_I2N5-dszen1_L3_137137Aligned.sortedByCoord.out.bam \
+      2020_I2N5-dszen3_L3_138138Aligned.sortedByCoord.out.bam \
+      2020_W5d2IN-1_L1_312312Aligned.sortedByCoord.out.bam \
+      2d-zen_GFP1-24hAligned.sortedByCoord.out.bam \
+      2d-zen_GFP2-24hAligned.sortedByCoord.out.bam \
+      2d-zen_GFP3-24hAligned.sortedByCoord.out.bam \
+      2d-zen_zen1-24hAligned.sortedByCoord.out.bam \
+      2d-zen_zen2-24hAligned.sortedByCoord.out.bam \
+      2d-zen_zen3-24hAligned.sortedByCoord.out.bam \
+      zen_GFP5Aligned.sortedByCoord.out.bam \
+      zen_V350058468_L01_GFP1Aligned.sortedByCoord.out.bam \
+      zen_V350058468_L01_GFP2Aligned.sortedByCoord.out.bam \
+      zen_V350058468_L01_GFP3Aligned.sortedByCoord.out.bam \
+      zen_V350058468_L01_GFP4Aligned.sortedByCoord.out.bam \
+      zen_V350058468_L01_zen2-1Aligned.sortedByCoord.out.bam \
+      zen_V350058468_L01_zen2-2Aligned.sortedByCoord.out.bam \
+      zen_V350058468_L01_zen4Aligned.sortedByCoord.out.bam \
+      zen_V350058468_L02_zen3Aligned.sortedByCoord.out.bam
+      do
+      stringtie -p 10 -G /home/zhangtingting/grasshopper/02RNA-Seq/evidenceModeler/evidence_zxm/EVM.all.gff -o $i.gtf /home/zhangtingting/grasshopper/02RNA-Seq/zenmap2genome/$i
+      echo $i.gtf >> gtf_list.txt
+      done
+      stringtie --merge -p 10 -G /home/zhangtingting/grasshopper/02RNA-Seq/evidenceModeler/evidence_zxm/EVM.all.gff -o stringtie_merged.gtf gtf_list.txt
+      
+      for i in 2020_D5d2IN-1_L1_314314Aligned.sortedByCoord.out.bam \
+      2020_I2N5-dsGFP2_L3_135135Aligned.sortedByCoord.out.bam \
+      2020_I2N5-dsGFP3_L3_136136Aligned.sortedByCoord.out.bam \
+      2020_I2N5-dszen1_L3_137137Aligned.sortedByCoord.out.bam \
+      2020_I2N5-dszen3_L3_138138Aligned.sortedByCoord.out.bam \
+      2020_W5d2IN-1_L1_312312Aligned.sortedByCoord.out.bam \
+      2d-zen_GFP1-24hAligned.sortedByCoord.out.bam \
+      2d-zen_GFP2-24hAligned.sortedByCoord.out.bam \
+      2d-zen_GFP3-24hAligned.sortedByCoord.out.bam \
+      2d-zen_zen1-24hAligned.sortedByCoord.out.bam \
+      2d-zen_zen2-24hAligned.sortedByCoord.out.bam \
+      2d-zen_zen3-24hAligned.sortedByCoord.out.bam \
+      zen_GFP5Aligned.sortedByCoord.out.bam \
+      zen_V350058468_L01_GFP1Aligned.sortedByCoord.out.bam \
+      zen_V350058468_L01_GFP2Aligned.sortedByCoord.out.bam \
+      zen_V350058468_L01_GFP3Aligned.sortedByCoord.out.bam \
+      zen_V350058468_L01_GFP4Aligned.sortedByCoord.out.bam \
+      zen_V350058468_L01_zen2-1Aligned.sortedByCoord.out.bam \
+      zen_V350058468_L01_zen2-2Aligned.sortedByCoord.out.bam \
+      zen_V350058468_L01_zen4Aligned.sortedByCoord.out.bam \
+      zen_V350058468_L02_zen3Aligned.sortedByCoord.out.bam
+      do
+      stringtie -e -B -p 30 -G stringtie_merged.gtf -o ballgown/$i.gtf /home/zhangtingting/grasshopper/02RNA-Seq/zenmap2genome/$i
+      echo $i.gtf >> ballgown/gtf_list.txt
+      done
+      sed s/\.gtf//g ballgown/gtf_list.txt > ballgown/gtf_list.txt1
+      paste -d '\t' ballgown/gtf_list.txt1 ballgown/gtf_list.txt > ballgown/gtf_list.txt2
+      cd ballgown
+      python prepDE.py3 -i gtf_list.txt2
+
+## 2.3 Plot of DEGs
+      library("DESeq2")
+      countData <- as.matrix(read.csv("gene_count_matrix.csv", row.names="gene_id"))
+      setwd("D:/R_space/grasshopper_eggs_deg")
+      colData <- read.table('sample.list.txt', header=T,row.names=1)
         
 
       
